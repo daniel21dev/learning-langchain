@@ -1,0 +1,32 @@
+from langchain.document_loaders import TextLoader
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import chroma
+from dotenv import load_dotenv
+
+load_dotenv()
+
+embeddings =  OpenAIEmbeddings()
+
+text_spliter= CharacterTextSplitter(
+    separator="\n",
+    chunk_size=200,
+    chunk_overlap=0
+)
+
+loader = TextLoader("facts.txt")
+docs = loader.load_and_split(
+    text_splitter=text_spliter
+)
+
+db = chroma.Chroma.from_documents(
+    docs,
+    embedding=embeddings,
+    persist_directory="emb"
+)
+
+results = db.similarity_search("What is an interesting fact about the english language?")
+
+for result in results:
+    print("\n")
+    print(result.page_content)
